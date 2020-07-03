@@ -21,27 +21,20 @@
                             </b-field>
                         </b-field>
                         <hr>
-                        <b-field  id="cssAttribute" name="cssAttribute" label="Css attributes: " class="level-item">
-                            <div id="cssAttributes">
-<!--                                <div id="cssAttributesIndex0">-->
-<!--                                    <b-field>-->
-<!--                                        <b-select v-model="cssAttribute" placeholder="Choose..." name="selectCssAttribute" >-->
-<!--                                            <option-->
-<!--                                                    v-for="(i, index) in cssAttributes"-->
-<!--                                                    :value="`${i.id_cssAttributes}.0`"-->
-<!--                                                    :key="`${index}`">-->
-<!--                                                {{i.value}}-->
-<!--                                            </option>-->
-<!--                                        </b-select>-->
-<!--                                        <b-input v-model="cssValue" name="cssAttributeValue" />-->
-<!--&lt;!&ndash;                                        <b-input v-model="`${cssValue}.0`" name="cssAttributeValue" @blur="setComponentData"/>&ndash;&gt;-->
-<!--                                    </b-field>-->
-<!--                                </div>-->
-                                <div class="" v-for="(css, index) in css" :key="`css${index}`">
-                                    <inputValue v-model="htmlValue" :attributeIndex="css[index].id" :cssAttribute="cssAttribute" :cssValue="cssValue" />
+
+                        <b-field name="cssAttributes" label="Css attributes: " class="level-item">
+                            <div class="cssAttributes">
+                                <div v-for="(c, index) in css" :key="`css${index}`">
+                                    <div class="cssAttribute" v-if="index===0">
+                                        <inputValue v-model="c.value" :attributeIndex="css[0]" :cssAttribute="cssAttribute" :cssValue="cssValue" />
+                                         <b-button @click="addAttribute" name="css" class="addBtn">Add</b-button><!--                        make that add button add new field and value-->
+                                    </div>
+                                    <div class="cssAttribute" v-else>
+                                        <inputValue v-model="c.value" :attributeIndex="css[index]" :selectValue="cssAttribute" :inputValue="cssValue" selectArrName="cssAttributes"/>
+                                        <b-button @click="removeAttribute(css[index].id)" name="css" class="removeBtn">Remove</b-button><!--                        make that add button add new field and value-->
+                                    </div>
                                 </div>
                             </div>
-                            <b-button @click="addAttribute" name="css" class="addBtn">Add</b-button><!--                        make that add button add new field and value-->
                         </b-field>
                         <hr>
                         <b-field label="Html attributes: " class="level-item">
@@ -68,17 +61,12 @@
                 </div>
             </div>
         </div>
-        <inputValue :cssAttributesIndex="cssAttributesIndex" v-model="htmlValue" :cssAttribute="cssAttribute" :cssValue="cssValue" />
-        <inputValue :cssAttributesIndex="cssAttributesIndex" v-model="htmlValue" :cssAttribute="cssAttribute" :cssValue="cssValue" />
-        <inputValue :cssAttributesIndex="cssAttributesIndex" v-model="htmlValue" :cssAttribute="cssAttribute" :cssValue="cssValue" />
         <hr>
     </div>
 </template>
 
 <script>
     import {mapActions, mapGetters} from 'vuex'
-    import Vue from 'vue/dist/vue.esm.js'
-    import Buefy from 'buefy'
     import inputValue from "../components/inputValue";
 
     export default {
@@ -88,7 +76,6 @@
         },
         data() {
             return {
-                cssAttributesIndex: 1,
                 htmlAttributesIndex: 1,
                 methodNumber: 0,
                 needToBeCalled: [
@@ -103,7 +90,7 @@
                 cssAttributes: [],
                 cssValues: [],
                 css: [
-                    {id: 0, value: {}}
+                    {id: 0, value: {attr: '', value: ''}}
                 ],
                 htmlAttributes: [],
                 attributeName: [],
@@ -142,11 +129,9 @@
                     return 'Choose...'
                 },
                 set(value) {
-                    console.log('cssAttribute:', value)
                     let arr = value.split('.')
                     let x = this.component.css[arr[1]] = {}
                     x[arr[0]] = ''
-                    console.log(this.component.css, 456)
                 }
             },
             cssValue: {
@@ -171,41 +156,17 @@
         methods: {
             ...mapActions(['setDataUrl', 'setDataArrName', 'getDataFromApi']),
             ...mapGetters(['getCode']),
-            addAttribute(e) {
-                const type = e.target.name || e.target.parentNode.name
-                // let elem = document.getElementsByName('cssAttribute')[0]
-                // let elemBFieldInner = document.createElement('b-field')
-                // let html = '<b-select placeholder="Choose..." name="selectCssAttribute" @blur="setComponentData">'
-                // for (let i = 0, len = this.cssAttributes.length; i < len; i++) {
-                //     html+=`<option
-                //             value="${this.cssAttributes[i].id_cssAttributes}"
-                //             key="${i}">${this.cssAttributes[i].value}</option>`
-                // }
-                // html+= `</b-select>
-                //         <b-input name="cssAttributeValue" @blur="setComponentData"/>`
-                // elemBFieldInner.innerHTML = html
-                // elem.appendChild(elemBFieldInner)
-
-
-
-                const elem = document.getElementById(`${type}Attributes`)//CssAtttributes
-                const id = `${type}AttributesIndex${this[`${type}AttributesIndex`]}`
-                const div = document.createElement('div')
-                div.setAttribute('id', id)
-                elem.appendChild(div)
-                let vm = Vue.extend(inputValue)
-                vm.use(Buefy)
-                let instance = new vm()
-                instance.$parent = this
-                instance.$options.props = {
-                    "v-model": this.htmlValue,
-                    cssAttributesIndex: parseInt(this.cssAttributesIndex),
-                    cssAttribute: this.cssAttribute,
-                }
-                instance.$mount()
-                // instance.$mount(`#${id}`)
-                div.appendChild(instance.$el)
-                ++this.cssAttributesIndex
+            addAttribute() {
+                let index = this.css[this.css.length-1].id
+                this.css.push({id: ++index, value: {}})
+                console.log(
+                    this.css
+                )
+            },
+            removeAttribute(id) {
+                this.css = this.css.filter(i => {
+                    return i.id!==id
+                })
             },
             setComponentData(elem) {
                 let value = elem.target.value
@@ -265,6 +226,19 @@
         margin: 0 0 0 20px;
     }
     .addBtn {
-        margin: 0 30px 0 0;
+        margin: 0 -30px 0 0 ;
+    }
+    .removeBtn {
+        margin: 0 -57px 0 0;
+    }
+    .cssAttribute {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .cssAttributes {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 </style>
