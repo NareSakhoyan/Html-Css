@@ -1,6 +1,6 @@
 <template>
         <b-field>
-            <b-select @input="func" :value="selectValue" placeholder="Choose..." name="selectCssAttribute">
+            <b-select @input="func" :value="selectValue" placeholder="Choose..." :name="selectArrName">
                 <option
                         v-for="(i, index) in selectList"
                         :value="`${i.value}.`"
@@ -8,7 +8,7 @@
                     {{i.value}}
                 </option>
             </b-select>
-            <b-input @input="func" :value="inputValue" name="cssAttributeValue"/>
+            <b-input @input="func" :value="inputValue" :name="selectArrName"/>
         </b-field>
 </template>
 
@@ -34,14 +34,8 @@
                 finalValue: {}
             }
         },
-        watch: {
-          selectArrName(to, from) {
-                      console.log(12 ,to, from)
-            }
-        },
         computed: {
             selectList() {
-                console.log(45, this.selectArrName);
                 return this.$store.state[this.selectArrName]
             },
         },
@@ -55,7 +49,6 @@
                 else{
                     this.finalValue.value = val
                 }
-                console.log(e.target? e.target.value: e)
                 this.$emit('input', this.finalValue)
             },
         },

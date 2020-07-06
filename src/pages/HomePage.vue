@@ -7,56 +7,47 @@
             <div class="columns">
                 <div class="column is-4">
                     <form @submit="apply" v-if="!isLoading">
-                        <b-field label="Html tags: " class="level-item">
+
+                        <b-field label="Html tags: " class="level-item labelTopFixed">
                             <b-field name="htmlTag" @submit="setComponentData">
-                                <b-select v-model="htmlTag" placeholder="Choose..." name="selectTag">
-                                    <option
-                                            v-for="(i, index) in tagNames"
-                                            :value="i.id_tagNames"
-                                            :key="`${index}`">
-                                        {{i.value}}{{i.id_html_tag_value}}
-                                    </option>
-                                </b-select>
-                                <b-input  v-model="htmlValue" name="tagValue" @blur="setComponentData"/>
+                                <inputValue v-model="htmlTag" :selectValue="cssAttribute" :inputValue="cssValue" selectArrName="tagNames"/>
                             </b-field>
                         </b-field>
+
                         <hr>
 
-                        <b-field name="cssAttributes" label="Css attributes: " class="level-item">
+                        <b-field name="cssAttributes" label="Css attributes: " class="level-item labelTopFixed">
                             <div class="cssAttributes">
-                                <div v-for="(c, index) in css" :key="`css${index}`">
+                                <div v-for="(c, index) in component.css" :key="`css${index}`">
                                     <div class="cssAttribute" v-if="index===0">
-                                        <inputValue v-model="c.value" :attributeIndex="css[0]" :cssAttribute="cssAttribute" :cssValue="cssValue" />
-                                         <b-button @click="addAttribute" name="css" class="addBtn">Add</b-button><!--                        make that add button add new field and value-->
+                                        <inputValue v-model="c.value" :attributeIndex="component.css[0]" :selectValue="cssAttribute" :inputValue="cssValue" selectArrName="cssAttributes"/>
+                                         <b-button @click="addAttribute(component.css)" name="css" class="addBtn">Add</b-button>
                                     </div>
                                     <div class="cssAttribute" v-else>
-                                        <inputValue v-model="c.value" :attributeIndex="css[index]" :selectValue="cssAttribute" :inputValue="cssValue" selectArrName="cssAttributes"/>
-                                        <b-button @click="removeAttribute(css[index].id)" name="css" class="removeBtn">Remove</b-button><!--                        make that add button add new field and value-->
+                                        <inputValue v-model="c.value" :attributeIndex="c" :selectValue="cssAttribute" :inputValue="cssValue" selectArrName="cssAttributes"/>
+                                        <b-button @click="removeAttribute(c.id, component.css)" name="css" class="removeBtn">Remove</b-button>
                                     </div>
                                 </div>
                             </div>
                         </b-field>
+
                         <hr>
-                        <b-field label="Html attributes: " class="level-item">
-                            <div id="htmlAttributes">
-                                <div id="htmlAttributesIndex0">
-                                    <b-field name="attribute">
-                                        <b-select placeholder="Choose..." name="selectAttribute" @blur="setComponentData">
-                                            <option
-                                                    v-for="(i, index) in htmlAttributes"
-                                                    :value="i.id_htmlAttributes"
-                                                    :key="`${index}`">
-                                                {{i.value}}
-                                            </option>
-                                        </b-select>
-                                        <b-input name="attributeValue" @blur="setComponentData"/>
-                                    </b-field>
+
+                        <b-field label="Html attributes: " class="level-item labelTopFixed">
+                            <div class="htmlAttributes">
+                                <div v-for="(attr, index) in component.attributes" :key="`attr${index}`">
+                                    <div class="htmlAttribute" v-if="index===0">
+                                        <inputValue v-model="attr.value" :attributeIndex="component.attributes[0]" :selectValue="htmlAttribute" :inputValue="htmlAttributeValue" selectArrName="htmlAttributes"/>
+                                        <b-button @click="addAttribute(component.attributes)" name="css" class="addBtn">Add</b-button>
+                                    </div>
+                                    <div class="htmlAttribute" v-else>
+                                        <inputValue v-model="attr.value" :attributeIndex="attr" :selectValue="htmlAttribute" :inputValue="htmlAttributeValue" selectArrName="htmlAttributes"/>
+                                        <b-button @click="removeAttribute(attr.id, component.attributes)" name="css" class="removeBtn">Remove</b-button>
+                                    </div>
                                 </div>
                             </div>
-                            <b-button @click="addAttribute" name="html" class="addBtn">Add</b-button>
                         </b-field>
-                        <!--                        addHtmlAttribute-->
-                        <b-button class="is-outlined is-success-passive apply level-item" >apply</b-button>
+                        <b-button class="is-outlined is-success-passive apply level-item" >Apply</b-button>
                     </form>
                 </div>
             </div>
@@ -89,17 +80,18 @@
                 tagNames: [],
                 cssAttributes: [],
                 cssValues: [],
-                css: [
-                    {id: 0, value: {attr: '', value: ''}}
-                ],
                 htmlAttributes: [],
                 attributeName: [],
                 attributeValue: [],
                 component: {
                     htmlTag: '',
                     htmlValue: '',//or it may be another htmltag
-                    css: {},
-                    attributes: {}
+                    css: [
+                        {id: 0, value: {attr: '', value: ''}}
+                    ],
+                    attributes: [
+                        {id: 0, value: {attr: '', value: ''}}
+                    ],
                 }
             }
         },
@@ -141,6 +133,24 @@
                 set(value) {
                     this.component.htmlValue = value
                 }
+            },
+            htmlAttribute: {
+                get() {
+                    return 'Choose...'
+                },
+                set(value) {
+                    let arr = value.split('.')
+                    let x = this.component.attributes[arr[1]] = {}
+                    x[arr[0]] = ''
+                }
+            },
+            htmlAttributeValue: {
+                get() {
+                    return ''
+                },
+                set(value) {
+                    this.component.htmlValue = value
+                }
             }
         },
         watch: {
@@ -156,17 +166,24 @@
         methods: {
             ...mapActions(['setDataUrl', 'setDataArrName', 'getDataFromApi']),
             ...mapGetters(['getCode']),
-            addAttribute() {
-                let index = this.css[this.css.length-1].id
-                this.css.push({id: ++index, value: {}})
+            addAttribute(arr) {
+                console.log(798, arr);
+                let index = arr[arr.length-1].id
+                arr.push({id: ++index, value: {}})
                 console.log(
-                    this.css
+                    arr
                 )
             },
-            removeAttribute(id) {
-                this.css = this.css.filter(i => {
+            removeAttribute(id, attr) {
+                console.log(111111111, attr, id)
+                attr = attr.filter(i => {
+                    if(i.id!==id) {
+                        console.log(i)
+                    }
                     return i.id!==id
                 })
+                this.$forceUpdate()
+                console.log(attr);
             },
             setComponentData(elem) {
                 let value = elem.target.value
@@ -231,14 +248,19 @@
     .removeBtn {
         margin: 0 -57px 0 0;
     }
-    .cssAttribute {
+    .cssAttribute, .htmlAttribute {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
-    .cssAttributes {
+    .cssAttributes, .htmlAttributes {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+    }
+    .labelTopFixed {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
     }
 </style>
