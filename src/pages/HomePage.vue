@@ -65,6 +65,8 @@
     import {mapActions, mapGetters} from 'vuex'
     import inputValue from "../components/inputValue";
     import Vue from 'vue'
+    // import saveDataForDb from "../utils/saveDataForDb";
+    // import store from "../store/store";
 
     export default {
         name: "HomePage",
@@ -210,6 +212,8 @@
             },
             apply() {
                 this.generateHtmlComponent(this.component)
+                this.saveDataForDb({...this.component})
+                console.log( 444, this.getCode()('tagNames', 'input'));
             },
             getData() {
                 let currentCall = this.needToBeCalled[this.methodNumber]
@@ -252,7 +256,6 @@
                 const cssObject = getObject(css)
                 // const cssValue = objectToString(cssObject, 'css')
                 const classValue =  [].concat(attributesObject['class'])
-
                 let vm = new Vue( {
                     data: {
                         htmlTag: attr,
@@ -268,7 +271,7 @@
                                 class: this.class,
                                 attrs: this.attrs,
                                 domProps: {
-                                    innerHTML: this.htmlValue
+                                    innerHTML: this.htmlValue || 'error'
                                 },
                             },
                         );
@@ -278,6 +281,48 @@
                     }
                 });
                 vm.$mount(div)
+            },
+            async saveDataForDb(data){
+                console.log('Data: ', data);
+                const {attributes, css, htmlTag} = data
+                const {attr, value} = htmlTag
+                const thisThis = this
+                console.log(0, attributes, css, htmlTag, attr, value);
+                // let codedData = {
+                //     'htmlTag'։ this.getCode()('tagNames', attr),
+                //     'attrs'։ this.getCode()('tagNames', attr),
+                // }
+                // let cssKeys = Object.keys(css)
+                const cssIds = await createIdsArr('css')
+                const attributesIds = await createIdsArr('attributes')
+
+                let response = (await this.$api.post(`/html`, {data: {tagName: attr, tagValue: value, cssIds: JSON.stringify(cssIds), attributesIds: JSON.stringify(attributesIds)}}))
+                console.log('response: ', response);
+
+
+                async function createIdsArr(objName) {
+                    const ids = []
+                    const obj = data[objName]
+                    for (let i in obj) {
+                        // let key = cssKeys[i]
+                        let attribute = obj[i];
+                        let value = attribute.value.value
+                        let attr = attribute.value.attr
+                        //get attribute code from store
+                        let attrId = thisThis.getCode()(objName==='css'? 'css': 'ht  ' +
+                            'mlAttributes', attr)
+                        //add value in db
+                        let response = (await thisThis.$api.post(`/${objName}/attributes/value`, {data: {valueId: value}})).data
+                        //get value id
+                        const valueId = response.insertId
+                        //add whole css in db
+                        response = (await thisThis.$api.post(`/${objName}/value`, {data: {valueId, attrId}})).data
+                        const id = response.insertId
+                        ids.push(id)
+                    }
+                    return ids
+                }
+
             }
         },
         mounted() {

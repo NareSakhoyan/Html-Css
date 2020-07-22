@@ -4,6 +4,7 @@ import api from '../utils/api'
 
 Vue.use(Vuex)
 
+// noinspection JSAnnotator
 const store = new Vuex.Store({
     state: {
         isLoading: false,
@@ -48,9 +49,14 @@ const store = new Vuex.Store({
         },
     },
     getters: {
-        getCode(arrName, attr) {
-            console.log((arrName.find(i => i.value == attr))[`id_${arrName}`])
-            return (arrName.find(i => i.value == attr))[`id_${arrName}`]
+        getCode(state) {
+            return function(arrName, attr) {
+                if (arrName===5) return 'asdasd'
+                if (!arrName) return ''
+                let result = (state[arrName].find(i => i.value == attr))[`id_${arrName}`]
+                console.log(result)
+                return result
+            }
         }
     },
 })
