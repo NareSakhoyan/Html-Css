@@ -301,6 +301,7 @@
 
 
                 async function createIdsArr(objName) {
+                    console.log('calling', objName)
                     const ids = []
                     const obj = data[objName]
                     for (let i in obj) {
@@ -309,9 +310,9 @@
                         let value = attribute.value.value
                         let attr = attribute.value.attr
                         //get attribute code from store
-                        let attrId = thisThis.getCode()(objName==='css'? 'css': 'ht  ' +
-                            'mlAttributes', attr)
+                        let attrId = thisThis.getCode()(objName==='css'? 'css': 'htmlAttributes', attr)
                         //add value in db
+                        console.log(123132, `/${objName}/attributes/value`, 'attrId: ', attrId)
                         let response = (await thisThis.$api.post(`/${objName}/attributes/value`, {data: {valueId: value}})).data
                         //get value id
                         const valueId = response.insertId

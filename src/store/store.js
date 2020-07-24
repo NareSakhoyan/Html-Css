@@ -51,8 +51,8 @@ const store = new Vuex.Store({
     getters: {
         getCode(state) {
             return function(arrName, attr) {
-                if (arrName===5) return 'asdasd'
-                if (!arrName) return ''
+                if (!arrName || !state[arrName].length) return ''
+                console.log(999, (state[arrName]))
                 let result = (state[arrName].find(i => i.value == attr))[`id_${arrName}`]
                 console.log(result)
                 return result
