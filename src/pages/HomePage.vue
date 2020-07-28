@@ -213,7 +213,6 @@
             apply() {
                 this.generateHtmlComponent(this.component)
                 this.saveDataForDb({...this.component})
-                console.log( 444, this.getCode()('tagNames', 'input'));
             },
             getData() {
                 let currentCall = this.needToBeCalled[this.methodNumber]
@@ -287,6 +286,7 @@
                 const {attributes, css, htmlTag} = data
                 const {attr, value} = htmlTag
                 const thisThis = this
+                let response
                 console.log(0, attributes, css, htmlTag, attr, value);
                 // let codedData = {
                 //     'htmlTag'։ this.getCode()('tagNames', attr),
@@ -294,11 +294,20 @@
                 // }
                 // let cssKeys = Object.keys(css)
                 const cssIds = await createIdsArr('css')
-                const attributesIds = await createIdsArr('attributes')
+                const attributesIds = await createIdsArr('attribute')
 
-                let response = (await this.$api.post(`/html`, {data: {tagName: attr, tagValue: value, cssIds: JSON.stringify(cssIds), attributesIds: JSON.stringify(attributesIds)}}))
+                //getting tag id from store arrs
+                const tagNameId = getCodeFromStore('tagNames', attr)
+                //inserting tag value into db and getting id
+                response = (await thisThis.$api.post(`/html/value`, {data: {tagValue: value}})).data
+                const tagValueId = response.insertId
+
+                response = (await this.$api.post(`/html`, {data: {tagName: tagNameId, tagValue: tagValueId, cssIds: JSON.stringify(cssIds), attributesIds: JSON.stringify(attributesIds)}}))
                 console.log('response: ', response);
 
+                async function getCodeFromStore(arrName, attr) {
+                    return await thisThis.getCode()(arrName, attr)
+                }
 
                 async function createIdsArr(objName) {
                     console.log('calling', objName)
@@ -310,7 +319,7 @@
                         let value = attribute.value.value
                         let attr = attribute.value.attr
                         //get attribute code from store
-                        let attrId = thisThis.getCode()(objName==='css'? 'css': 'htmlAttributes', attr)
+                        let attrId = await thisThis.getCode()(objName==='css'? 'cssAttributes': 'htmlAttributes', attr)
                         //add value in db
                         console.log(123132, `/${objName}/attributes/value`, 'attrId: ', attrId)
                         let response = (await thisThis.$api.post(`/${objName}/attributes/value`, {data: {valueId: value}})).data
