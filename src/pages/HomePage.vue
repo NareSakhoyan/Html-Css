@@ -288,11 +288,6 @@
                 const thisThis = this
                 let response
                 console.log(0, attributes, css, htmlTag, attr, value);
-                // let codedData = {
-                //     'htmlTag'։ this.getCode()('tagNames', attr),
-                //     'attrs'։ this.getCode()('tagNames', attr),
-                // }
-                // let cssKeys = Object.keys(css)
                 const cssIds = await createIdsArr('css')
                 const attributesIds = await createIdsArr('attribute')
 
@@ -301,12 +296,10 @@
                 //inserting tag value into db and getting id
                 response = (await thisThis.$api.post(`/html/value`, {data: {tagValue: value}})).data
                 const tagValueId = response.insertId
-
                 response = (await this.$api.post(`/html`, {data: {tagName: tagNameId, tagValue: tagValueId, cssIds: JSON.stringify(cssIds), attributesIds: JSON.stringify(attributesIds)}}))
-                console.log('response: ', response);
 
-                async function getCodeFromStore(arrName, attr) {
-                    return await thisThis.getCode()(arrName, attr)
+                function getCodeFromStore(arrName, attr) {
+                    return thisThis.getCode()(arrName, attr)
                 }
 
                 async function createIdsArr(objName) {
@@ -321,10 +314,10 @@
                         //get attribute code from store
                         let attrId = await thisThis.getCode()(objName==='css'? 'cssAttributes': 'htmlAttributes', attr)
                         //add value in db
-                        console.log(123132, `/${objName}/attributes/value`, 'attrId: ', attrId)
-                        let response = (await thisThis.$api.post(`/${objName}/attributes/value`, {data: {valueId: value}})).data
+                        console.log(123132, `/${objName}/attributes/value`, 'attrId: ', attrId)ք
+                        let response = await thisThis.$api.post(`/${objName}/attributes/value`, {data: {valueId: value}})
                         //get value id
-                        const valueId = response.insertId
+                        const valueId = response.data.insertId
                         //add whole css in db
                         response = (await thisThis.$api.post(`/${objName}/value`, {data: {valueId, attrId}})).data
                         const id = response.insertId

@@ -50,26 +50,11 @@ const store = new Vuex.Store({
     },
     getters: {
         getCode(state) {
-            // return function(arrName, attr) {
-            //     if (!arrName || !state[arrName].length) return ''
-            //     console.log(999, (state[arrName]))
-            //     let result = (state[arrName].find(i => i.value == attr))[`id_${arrName}`]
-            //     console.log('result code:', result)
-            //     return result
-            // }
-
             return function(arrName, attr) {
-                return new Promise(resolve => {
-                    console.log(arrName, attr, state)
-                    if (!arrName || !state[arrName].length) resolve('')
-                    console.log(999, (state[arrName]))
-                    let result = (state[arrName].find(i => i.value == attr))[`id_${arrName}`]
-                    console.log('result code:', result)
-                    // resolve(result)
-                    setTimeout(()=>{
-                        resolve(result)
-                    }, 500)
-                })
+                if (!arrName || !state[arrName].length) return ('')
+                let result = (state[arrName].find(i => i.value == attr))[`id_${arrName}`]
+                console.log('result code:', result)
+                return result
             }
         }
     },
