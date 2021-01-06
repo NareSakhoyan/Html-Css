@@ -14,7 +14,7 @@
     "css-start": "npm-run-all --parallel css-watch"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "buefy": "^0.8.20",
     "bulma": "^0.9.0",
